@@ -27,12 +27,20 @@
 #include "hwplatform.h"
 #include <stdio.h>
 #include "task_ui.h"
+#include <math.h>
 
 //******************************************************************************
 // DEFINES & TYPEDEFS
 
 #define GREY_COLOR  RGB565(240, 240, 240)
 #define GREEN_COLOR RGB565(0, 255, 0)
+#define WHITE_COLOR RGB565(255, 255, 255)
+
+uint16_t xPosition = X_SCREEN_DIMENTIONS/2;
+uint16_t yPosition = Y_SCREEN_DIMENTIONS/2;
+
+uint16_t lineRadius = 10;
+double lineAngle = PI/2;
 
 //******************************************************************************
 // FUNCTIONS
@@ -71,6 +79,8 @@ static void EmphasizeButton(tUIEvent button)
 
     LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
     LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
+
+    lineRadius++;
     break;
   case EV_KEY_DOWN_PRESS:
     LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
@@ -83,6 +93,8 @@ static void EmphasizeButton(tUIEvent button)
 
     LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
     LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
+
+    lineRadius--;
     break;
   case EV_KEY_LEFT_PRESS:
     LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
@@ -95,6 +107,8 @@ static void EmphasizeButton(tUIEvent button)
 
     LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
     LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
+
+    lineAngle+=0.1;
     break;
   case EV_KEY_RIGHT_PRESS:
     LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
@@ -107,6 +121,8 @@ static void EmphasizeButton(tUIEvent button)
 
     LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
     LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
+
+    lineAngle-=0.1;
     break;
   case EV_KEY_OK_PRESS:
     LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
@@ -159,6 +175,8 @@ static void EmphasizeButton(tUIEvent button)
   default:
     break;
   }
+
+  LCD_DrawCircle(X_SCREEN_DIMENTIONS/2,Y_SCREEN_DIMENTIONS/2,lineRadius,WHITE_COLOR);
 }
 
 //******************************************************************************

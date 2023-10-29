@@ -117,20 +117,21 @@
       "utility": "c",
       "aes.h": "c",
       "graphics.h": "c",
-      "systick.h": "c"
+      "systick.h": "c",
+      "tftdriver.h": "c"
     },
     "idf.adapterTargetName": "esp32",
     "idf.openOcdConfigs": [
       "interface/ftdi/esp32_devkitj_v1.cfg",
       "target/esp32.cfg"
     ],
-    "idf.gitPathWin": "c:\\source\\espressif4_4_4\\tools\\idf-git\\2.30.1\\cmd\\git.exe",
-    "idf.espIdfPathWin": "${workspaceFolder}\\..\\..\\esp-idf",
-    "idf.pythonBinPathWin": "c:\\source\\espressif4_4_4\\python_env\\idf4.4_py3.8_env\\Scripts\\python.exe",
-    "idf.toolsPathWin": "c:\\source\\espressif4_4_4",
-    "idf.customExtraPaths": "c:\\source\\espressif4_4_4\\tools\\xtensa-esp-elf-gdb\\11.2_20220823\\xtensa-esp-elf-gdb\\bin;c:\\source\\espressif4_4_4\\tools\\riscv32-esp-elf-gdb\\11.2_20220823\\riscv32-esp-elf-gdb\\bin;c:\\source\\espressif4_4_4\\tools\\xtensa-esp32-elf\\esp-2021r2-patch5-8.4.0\\xtensa-esp32-elf\\bin;c:\\source\\espressif4_4_4\\tools\\xtensa-esp32s2-elf\\esp-2021r2-patch5-8.4.0\\xtensa-esp32s2-elf\\bin;c:\\source\\espressif4_4_4\\tools\\xtensa-esp32s3-elf\\esp-2021r2-patch5-8.4.0\\xtensa-esp32s3-elf\\bin;c:\\source\\espressif4_4_4\\tools\\riscv32-esp-elf\\esp-2021r2-patch5-8.4.0\\riscv32-esp-elf\\bin;c:\\source\\espressif4_4_4\\tools\\esp32ulp-elf\\2.35_20220830\\esp32ulp-elf\\bin;c:\\source\\espressif4_4_4\\tools\\cmake\\3.23.1\\bin;c:\\source\\espressif4_4_4\\tools\\openocd-esp32\\v0.11.0-esp32-20221026\\openocd-esp32\\bin;c:\\source\\espressif4_4_4\\tools\\ninja\\1.10.2;c:\\source\\espressif4_4_4\\tools\\idf-exe\\1.0.3;c:\\source\\espressif4_4_4\\tools\\ccache\\4.3\\ccache-4.3-windows-64;c:\\source\\espressif4_4_4\\tools\\dfu-util\\0.9\\dfu-util-0.9-win64",
+    "idf.gitPathWin": "c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\idf-git\\2.39.2\\cmd\\git.exe",
+    "idf.espIdfPathWin": "c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\esp-idf",
+    "idf.pythonBinPathWin": "c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\python_env\\idf4.4_py3.8_env\\Scripts\\python.exe",
+    "idf.toolsPathWin": "c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif",
+    "idf.customExtraPaths": "c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\xtensa-esp-elf-gdb\\11.2_20220823\\xtensa-esp-elf-gdb\\bin;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\riscv32-esp-elf-gdb\\11.2_20220823\\riscv32-esp-elf-gdb\\bin;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\xtensa-esp32-elf\\esp-2021r2-patch5-8.4.0\\xtensa-esp32-elf\\bin;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\xtensa-esp32s2-elf\\esp-2021r2-patch5-8.4.0\\xtensa-esp32s2-elf\\bin;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\xtensa-esp32s3-elf\\esp-2021r2-patch5-8.4.0\\xtensa-esp32s3-elf\\bin;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\riscv32-esp-elf\\esp-2021r2-patch5-8.4.0\\riscv32-esp-elf\\bin;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\esp32ulp-elf\\2.35_20220830\\esp32ulp-elf\\bin;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\cmake\\3.23.1\\bin;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\openocd-esp32\\v0.11.0-esp32-20221026\\openocd-esp32\\bin;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\ninja\\1.10.2;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\idf-exe\\1.0.3;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\ccache\\4.3\\ccache-4.3-windows-64;c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\dfu-util\\0.9\\dfu-util-0.9-win64",
     "idf.customExtraVars": {
-      "OPENOCD_SCRIPTS": "c:\\source\\espressif4_4_4\\tools\\openocd-esp32\\v0.11.0-esp32-20221026/openocd-esp32/share/openocd/scripts",
+      "OPENOCD_SCRIPTS": "c:\\Users\\DRF\\Documents\\GitHub\\Aries\\Versa_Sample\\espressif\\tools\\openocd-esp32\\v0.11.0-esp32-20221026/openocd-esp32/share/openocd/scripts",
       "IDF_CCACHE_ENABLE": "1"
     },
 	}

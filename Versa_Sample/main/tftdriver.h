@@ -142,6 +142,9 @@ void TFT_Init(void);
 
 void PutPixelHiCol(uint16_t x, uint16_t y, uint16_t col);
 void LCD_DrawRectangle(uint16_t x, uint16_t y, uint16_t sx, uint16_t sy, uint16_t col);
+void LCD_DrawLine(uint16_t x, uint16_t y, uint16_t sx, uint16_t sy, uint16_t col);
+void LCD_DrawPolarLine(uint16_t x,  uint16_t y, uint16_t r,  float phi, uint16_t col);
+void LCD_DrawCircle(uint16_t x,  uint16_t y, uint16_t r, uint16_t col);
 
 // Backlight
 void TFT_BacklightManage(void);

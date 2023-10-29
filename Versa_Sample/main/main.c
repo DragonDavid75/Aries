@@ -90,7 +90,7 @@ void app_main()
   NvsFlash_Init();
 
   // Initialize buzzer
-  if (RES_OK != Buzzer_Init())
+  if (Buzzer_Init() != RES_OK)
   { ESP_LOGE(TAG, "Initializing buzzer controller"); goto error; }
 
   //Initialize system tick

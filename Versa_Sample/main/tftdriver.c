@@ -21,12 +21,14 @@
 #include "pcbdefs.h"
 #include "tftdriver.h"
 #include "hwplatform.h"
+#include <math.h>
 
 #include "screen_backlight.h"
 
 #define KEY_END     0x00
 
 #define BL_MAX_PWM (1 << BACKLIGHT_PWM_RES)
+
 
 //******************************************************************************
 // VARIABLES
@@ -407,6 +409,43 @@ void LCD_DrawRectangle(uint16_t x,  uint16_t y,
 }
 
 //******************************************************************************
+void LCD_DrawLine(uint16_t x1,  uint16_t y1, 
+                       uint16_t x2, uint16_t y2, uint16_t col)
+//******************************************************************************
+// Description: draws a straight line from x1,y1 to x2,y2 with color col
+//******************************************************************************
+{
+  uint16_t i;
+  uint16_t l = sqrt(pow(x2-x1, 2) + pow(y2-y1, 2));
+  if(l==0) return;
+  for(i=0; i<=l; i++){
+    PutPixelHiCol(x1 + i*(x2-x1)/l, y1 + i*(y2-y1)/l, col);
+  }
+}
+
+//******************************************************************************
+void LCD_DrawPolarLine(uint16_t x,  uint16_t y, uint16_t r,  float phi, uint16_t col)
+//******************************************************************************
+// Description: draws a straight line from x,y with radius r at an angle phi with color col
+//******************************************************************************
+{
+  LCD_DrawLine(x, y, x+r*cos(phi), y-r*sin(phi), col);
+}
+
+//******************************************************************************
+void LCD_DrawCircle(uint16_t x,  uint16_t y, uint16_t r, uint16_t col)
+//******************************************************************************
+// Description: draws a circle at x,y with radius r with color col
+//******************************************************************************
+{
+  uint16_t i;
+  u_int16_t j = 2*PI*r; //Circle circunference
+  for(i=0; i<=j; i++){
+    LCD_DrawPolarLine(x, y, r, (float)i/r, col);
+  }
+}
+
+//******************************************************************************
 void PutPixelHiCol(uint16_t x, uint16_t y, uint16_t col)
 //******************************************************************************
 // Description: draws a pixel of a selected 565 color coding at the given screen 
@@ -416,6 +455,7 @@ void PutPixelHiCol(uint16_t x, uint16_t y, uint16_t col)
 //   uint16_t col: color in 16bit per pixel
 //******************************************************************************
 {
+  if(!((x>0 && x<X_SCREEN_DIMENTIONS) && (y>0 && y<Y_SCREEN_DIMENTIONS))) return;
   TFTSetActiveWindow(x,y,239,319);
   LCD_StartWriteOperation();
   LCD_WriteData(col);

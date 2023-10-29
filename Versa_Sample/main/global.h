@@ -37,6 +37,18 @@
 #define TRUE 1
 #endif
 
+#ifndef PI
+#define PI 3.1415
+#endif
+
+#ifndef X_SCREEN_DIMENTIONS
+#define X_SCREEN_DIMENTIONS 240
+#endif
+
+#ifndef Y_SCREEN_DIMENTIONS
+#define Y_SCREEN_DIMENTIONS 320
+#endif
+
 typedef enum
 {
   RES_OK = 0,
