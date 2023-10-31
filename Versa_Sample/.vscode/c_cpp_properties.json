@@ -3,7 +3,9 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/esp-idf/components/newlib/platform_include",
+                "${workspaceFolder}/esp-idf/components/newlib/platform_include"
             ],
             "defines": [
                 "_DEBUG",
@@ -14,7 +16,8 @@
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-msvc-x64",
             "compileCommands": "${workspaceFolder}/build/compile_commands.json",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compilerPath": ""
         }
     ],
     "version": 4

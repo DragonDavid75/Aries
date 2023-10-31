@@ -19,164 +19,88 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 #include "global.h"
-#include "hwplatform.h"
 #include "tftdriver.h"
 #include "scr_main.h"
 #include "hwplatform.h"
 #include <stdio.h>
 #include "task_ui.h"
 #include <math.h>
+#include "animations.h"
 
 //******************************************************************************
 // DEFINES & TYPEDEFS
 
-#define GREY_COLOR  RGB565(240, 240, 240)
-#define GREEN_COLOR RGB565(0, 255, 0)
-#define WHITE_COLOR RGB565(255, 255, 255)
+#define GUIDE_LINE_LENGTH 20
+#define BALL_RADIUS 10
+#define BALL_X_ORIGIN SCREEN_WIDTH/2
+#define BALL_Y_ORIGIN SCREEN_HEIGHT-BALL_RADIUS-1
 
-uint16_t xPosition = X_SCREEN_DIMENTIONS/2;
-uint16_t yPosition = Y_SCREEN_DIMENTIONS/2;
+float throwDirection = PI/2;
 
-uint16_t lineRadius = 10;
-double lineAngle = PI/2;
 
+
+static uint16_t UI_timer_40ms = 0;
 //******************************************************************************
 // FUNCTIONS
 
 //******************************************************************************
-static void EmphasizeButton(tUIEvent button)
+static void setBallDirection(tUIEvent button)
 //******************************************************************************
-// Description: Emphasize a button setting it to green
-// Parameters: button - button to emphasize
+// Description: setBallDirection
+// Parameters: button - button pressed
+// Returns: none
+//******************************************************************************
+{
+  LCD_DrawPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, BLACK_COLOR);
+
+  switch (button)
+  {
+  case EV_KEY_LEFT_PRESS:
+      throwDirection+=0.1;
+    break;
+  case EV_KEY_RIGHT_PRESS:
+      throwDirection-=0.1;
+    break;
+
+  default:
+    break;
+  }
+  LCD_DrawPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, GREEN_COLOR);
+}
+//******************************************************************************
+static void setThrowInstruction(tUIEvent button)
+//******************************************************************************
+// Description: setThrowInstruction
+// Parameters: button - button pressed
 // Returns: none
 //******************************************************************************
 {
   switch (button)
   {
   case EV_FULL_REDRAW:
-  case EV_PARTIAL_REDRAW: // All grey
-    LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
-    LCD_DrawRectangle(150, 65, 20, 10, GREY_COLOR);
-
-    LCD_DrawRectangle(60, 120, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(30, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(90, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(60, 180, 20, 20, GREY_COLOR);
-
-    LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
+  case EV_PARTIAL_REDRAW:
     break;
   case EV_KEY_UP_PRESS:
-    LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
-    LCD_DrawRectangle(150, 65, 20, 10, GREY_COLOR);
-
-    LCD_DrawRectangle(60, 120, 20, 20, GREEN_COLOR);
-    LCD_DrawRectangle(30, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(90, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(60, 180, 20, 20, GREY_COLOR);
-
-    LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
-
-    lineRadius++;
+    throwBall(throwDirection);
     break;
   case EV_KEY_DOWN_PRESS:
-    LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
-    LCD_DrawRectangle(150, 65, 20, 10, GREY_COLOR);
-
-    LCD_DrawRectangle(60, 120, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(30, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(90, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(60, 180, 20, 20, GREEN_COLOR);
-
-    LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
-
-    lineRadius--;
     break;
   case EV_KEY_LEFT_PRESS:
-    LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
-    LCD_DrawRectangle(150, 65, 20, 10, GREY_COLOR);
-
-    LCD_DrawRectangle(60, 120, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(30, 150, 20, 20, GREEN_COLOR);
-    LCD_DrawRectangle(90, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(60, 180, 20, 20, GREY_COLOR);
-
-    LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
-
-    lineAngle+=0.1;
     break;
   case EV_KEY_RIGHT_PRESS:
-    LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
-    LCD_DrawRectangle(150, 65, 20, 10, GREY_COLOR);
-
-    LCD_DrawRectangle(60, 120, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(30, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(90, 150, 20, 20, GREEN_COLOR);
-    LCD_DrawRectangle(60, 180, 20, 20, GREY_COLOR);
-
-    LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
-
-    lineAngle-=0.1;
     break;
   case EV_KEY_OK_PRESS:
-    LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
-    LCD_DrawRectangle(150, 65, 20, 10, GREY_COLOR);
-
-    LCD_DrawRectangle(60, 120, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(30, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(90, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(60, 180, 20, 20, GREY_COLOR);
-
-    LCD_DrawRectangle(190, 135, 20, 20, GREEN_COLOR);
-    LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
     break;
   case EV_KEY_RETURN_PRESS:
-    LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
-    LCD_DrawRectangle(150, 65, 20, 10, GREY_COLOR);
-
-    LCD_DrawRectangle(60, 120, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(30, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(90, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(60, 180, 20, 20, GREY_COLOR);
-
-    LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(160, 165, 20, 20, GREEN_COLOR);
     break;
   case EV_KEY_L_TRIGGER_PRESS:
-    LCD_DrawRectangle(70,  65, 20, 10, GREEN_COLOR);
-    LCD_DrawRectangle(150, 65, 20, 10, GREY_COLOR);
-
-    LCD_DrawRectangle(60, 120, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(30, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(90, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(60, 180, 20, 20, GREY_COLOR);
-
-    LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
     break;
   case EV_KEY_R_TRIGGER_PRESS:
-    LCD_DrawRectangle(70,  65, 20, 10, GREY_COLOR);
-    LCD_DrawRectangle(150, 65, 20, 10, GREEN_COLOR);
-
-    LCD_DrawRectangle(60, 120, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(30, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(90, 150, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(60, 180, 20, 20, GREY_COLOR);
-
-    LCD_DrawRectangle(190, 135, 20, 20, GREY_COLOR);
-    LCD_DrawRectangle(160, 165, 20, 20, GREY_COLOR);
     break;
   default:
     break;
   }
-
-  LCD_DrawCircle(X_SCREEN_DIMENTIONS/2,Y_SCREEN_DIMENTIONS/2,lineRadius,WHITE_COLOR);
 }
 
 //******************************************************************************
@@ -199,34 +123,47 @@ void MainMenuScreenHandler(void)
     case EV_PARTIAL_REDRAW:
       // Clear screen
       LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,0);
-
-      EmphasizeButton(event);
+      LCD_DrawPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, GREEN_COLOR);
+      
+      setBallParam(BALL_X_ORIGIN, BALL_Y_ORIGIN, BALL_RADIUS, 10, GREEN_COLOR);
+      /*
+      for(uint16_t i=0; i<=SCREEN_WIDTH/5;i++){
+        LCD_DrawRectangle(i*5,0,1,SCREEN_HEIGHT,WHITE_COLOR);
+      }
+      for(uint16_t i=0; i<=SCREEN_HEIGHT/5;i++){
+        LCD_DrawRectangle(0,i*5,SCREEN_WIDTH,1,WHITE_COLOR);
+      }
+      */
       break;
     case EV_TIMER_20MS:
+      if(++UI_timer_40ms == 2){
+        UI_timer_40ms = 0;
+        updateBallLocation();
+      }
       break;
     case EV_KEY_UP_PRESS:
-      EmphasizeButton(event);
+      throwBall(throwDirection);
       break;
     case EV_KEY_DOWN_PRESS:
-      EmphasizeButton(event);
+      //setBallDirection(event);
       break;
     case EV_KEY_LEFT_PRESS:
-      EmphasizeButton(event);
+      setBallDirection(event);
       break;
     case EV_KEY_RIGHT_PRESS:
-      EmphasizeButton(event);
+      setBallDirection(event);
       break;
     case EV_KEY_OK_PRESS:
-      EmphasizeButton(event);
+      setBallDirection(event);
       break;
     case EV_KEY_RETURN_PRESS:
-      EmphasizeButton(event);
+      stopBall();
       break;
     case EV_KEY_L_TRIGGER_PRESS:
-      EmphasizeButton(event);
+      setBallDirection(event);
       break;
     case EV_KEY_R_TRIGGER_PRESS:
-      EmphasizeButton(event);
+      setBallDirection(event);
       break;
     case EV_KEY_START_PRESS:
       // Apagar
@@ -240,7 +177,8 @@ void MainMenuScreenHandler(void)
       DisablePower();
       SysSleep(500);
       break;
-    default: UIIdle();
+    default: 
+      UIIdle();
     }
   }
 }

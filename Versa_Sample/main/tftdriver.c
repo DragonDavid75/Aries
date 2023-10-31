@@ -440,8 +440,8 @@ void LCD_DrawCircle(uint16_t x,  uint16_t y, uint16_t r, uint16_t col)
 {
   uint16_t i;
   u_int16_t j = 2*PI*r; //Circle circunference
-  for(i=0; i<=j; i++){
-    LCD_DrawPolarLine(x, y, r, (float)i/r, col);
+  for(i=1; i<=j/4; i++){
+    LCD_DrawRectangle(x-r*cos((float)i/r)+1, y-r*sin((float)i/r)+1, 2*(int)(r*cos((float)i/r))+1, 2*(int)(r*sin((float)i/r))+1, col);
   }
 }
 
@@ -455,7 +455,7 @@ void PutPixelHiCol(uint16_t x, uint16_t y, uint16_t col)
 //   uint16_t col: color in 16bit per pixel
 //******************************************************************************
 {
-  if(!((x>0 && x<X_SCREEN_DIMENTIONS) && (y>0 && y<Y_SCREEN_DIMENTIONS))) return;
+  if(!((x>0 && x<SCREEN_WIDTH) && (y>0 && y<SCREEN_HEIGHT))) return;
   TFTSetActiveWindow(x,y,239,319);
   LCD_StartWriteOperation();
   LCD_WriteData(col);

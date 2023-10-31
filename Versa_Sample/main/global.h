@@ -41,13 +41,14 @@
 #define PI 3.1415
 #endif
 
-#ifndef X_SCREEN_DIMENTIONS
-#define X_SCREEN_DIMENTIONS 240
-#endif
 
-#ifndef Y_SCREEN_DIMENTIONS
-#define Y_SCREEN_DIMENTIONS 320
-#endif
+#define GREY_COLOR  RGB565(240, 240, 240)
+#define RED_COLOR   RGB565(255, 0, 0)
+#define GREEN_COLOR RGB565(0, 255, 0)
+#define WHITE_COLOR RGB565(255, 255, 255)
+#define BLACK_COLOR RGB565(0, 0, 0)
+
+
 
 typedef enum
 {
