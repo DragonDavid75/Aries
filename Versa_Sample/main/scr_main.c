@@ -26,21 +26,16 @@
 #include <stdio.h>
 #include "task_ui.h"
 #include <math.h>
-#include "animations.h"
+#include "game.h"
 
 //******************************************************************************
 // DEFINES & TYPEDEFS
 
-#define GUIDE_LINE_LENGTH 20
-#define BALL_RADIUS 10
-#define BALL_X_ORIGIN SCREEN_WIDTH/2
-#define BALL_Y_ORIGIN SCREEN_HEIGHT-BALL_RADIUS-1
-
 float throwDirection = PI/2;
 
-
-
 static uint16_t UI_timer_40ms = 0;
+
+
 //******************************************************************************
 // FUNCTIONS
 
@@ -82,7 +77,7 @@ static void setThrowInstruction(tUIEvent button)
   case EV_PARTIAL_REDRAW:
     break;
   case EV_KEY_UP_PRESS:
-    throwBall(throwDirection);
+    //throwBall(throwDirection);
     break;
   case EV_KEY_DOWN_PRESS:
     break;
@@ -123,9 +118,16 @@ void MainMenuScreenHandler(void)
     case EV_PARTIAL_REDRAW:
       // Clear screen
       LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,0);
+
+      generateBoard();
+      displayBoard();
       LCD_DrawPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, GREEN_COLOR);
-      
-      setBallParam(BALL_X_ORIGIN, BALL_Y_ORIGIN, BALL_RADIUS, 10, GREEN_COLOR);
+      /*
+      for(uint16_t i = 0; i<=SCREEN_HEIGHT/(2*BALL_RADIUS);i++){
+        for(uint16_t j = 0; j<=SCREEN_WIDTH/(2*BALL_RADIUS)-1-i%2;j++){
+          LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1)*BALL_LAYER_DISTANCE, BALL_RADIUS, WHITE_COLOR);
+        }
+      }*/
       /*
       for(uint16_t i=0; i<=SCREEN_WIDTH/5;i++){
         LCD_DrawRectangle(i*5,0,1,SCREEN_HEIGHT,WHITE_COLOR);
@@ -136,13 +138,13 @@ void MainMenuScreenHandler(void)
       */
       break;
     case EV_TIMER_20MS:
-      if(++UI_timer_40ms == 2){
+      if(++UI_timer_40ms == 1){
         UI_timer_40ms = 0;
         updateBallLocation();
       }
       break;
     case EV_KEY_UP_PRESS:
-      throwBall(throwDirection);
+      if(!moving) throwBall(throwDirection, GREEN_COLOR);
       break;
     case EV_KEY_DOWN_PRESS:
       //setBallDirection(event);
