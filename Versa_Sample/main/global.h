@@ -41,15 +41,20 @@
 #define PI 3.1415
 #endif
 
-#define BLACK_COLOR   RGB565(0, 0, 0)
-#define RED_COLOR     RGB565(255, 0, 0)
-#define GREEN_COLOR   RGB565(0, 255, 0)
-#define BLUE_COLOR    RGB565(0, 0, 255)
-#define YELLOW_COLOR  RGB565(255, 255, 0)
-#define CYAN_COLOR    RGB565(0, 255, 255)
-#define VIOLET_COLOR  RGB565(255, 0, 255)
-#define GREY_COLOR    RGB565(240, 240, 240)
-#define WHITE_COLOR   RGB565(255, 255, 255)
+#define BLACK_COLOR         RGB565(0, 0, 0)
+#define RED_COLOR           RGB565(255, 0, 0)
+#define GREEN_COLOR         RGB565(0, 255, 0)
+#define BLUE_COLOR          RGB565(0, 0, 255)
+#define YELLOW_COLOR        RGB565(255, 255, 0)
+#define CYAN_COLOR          RGB565(0, 255, 255)
+#define VIOLET_COLOR        RGB565(255, 0, 255)
+#define LIGHT_GREY_COLOR    RGB565(191, 191, 191)
+#define GREY_COLOR          RGB565(127, 127, 127)
+#define DARK_GREY_COLOR     RGB565(63, 63, 63)
+#define WHITE_COLOR         RGB565(255, 255, 255)
+
+#define NUMBER_SPRITE_HEIGHT 8
+#define NUMBER_SPRITE_WIDTH 6
 
 typedef enum
 {

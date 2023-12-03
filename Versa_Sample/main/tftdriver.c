@@ -22,6 +22,7 @@
 #include "tftdriver.h"
 #include "hwplatform.h"
 #include <math.h>
+#include <sprites.h>
 
 #include "screen_backlight.h"
 
@@ -409,8 +410,7 @@ void LCD_DrawRectangle(uint16_t x,  uint16_t y,
 }
 
 //******************************************************************************
-void LCD_DrawLine(uint16_t x1,  uint16_t y1, 
-                       uint16_t x2, uint16_t y2, uint16_t col)
+void LCD_DrawLine(uint16_t x1,  uint16_t y1, uint16_t x2, uint16_t y2, uint16_t col)
 //******************************************************************************
 // Description: draws a straight line from x1,y1 to x2,y2 with color col
 //******************************************************************************
@@ -424,12 +424,36 @@ void LCD_DrawLine(uint16_t x1,  uint16_t y1,
 }
 
 //******************************************************************************
+void LCD_DrawDashedLine(uint16_t x1,  uint16_t y1, uint16_t x2, uint16_t y2, uint8_t dashLen, uint8_t gapLen, uint16_t col)
+//******************************************************************************
+// Description: draws a straight dashed line from x1,y1 to x2,y2 with color col
+//******************************************************************************
+{
+  uint16_t i,j;
+  uint16_t l = sqrt(pow(x2-x1, 2) + pow(y2-y1, 2));
+  if(l==0) return;
+  for(i=0; i<=l/(dashLen+gapLen); i++){
+    for(j=0; j<dashLen; j++){
+      PutPixelHiCol(x1 + j*(x2-x1)/l + i*(dashLen+gapLen)*(x2-x1)/l, y1 + j*(y2-y1)/l + i*(dashLen+gapLen)*(y2-y1)/l, col); 
+    }
+  }
+}
+//******************************************************************************
 void LCD_DrawPolarLine(uint16_t x,  uint16_t y, uint16_t r,  float phi, uint16_t col)
+//******************************************************************************
+// Description: draws a straight dashed line from x,y with radius r at an angle phi with color col
+//******************************************************************************
+{
+  LCD_DrawLine(x, y, x+r*cos(phi), y-r*sin(phi), col);
+}
+
+//******************************************************************************
+void LCD_DrawDashedPolarLine(uint16_t x,  uint16_t y, uint16_t r,  float phi, uint8_t dashLen, uint8_t gapLen, uint16_t col)
 //******************************************************************************
 // Description: draws a straight line from x,y with radius r at an angle phi with color col
 //******************************************************************************
 {
-  LCD_DrawLine(x, y, x+r*cos(phi), y-r*sin(phi), col);
+  LCD_DrawDashedLine(x, y, x+r*cos(phi), y-r*sin(phi), dashLen, gapLen, col);
 }
 
 //******************************************************************************
@@ -443,6 +467,28 @@ void LCD_DrawCircle(uint16_t x,  uint16_t y, uint16_t r, uint16_t col)
   for(i=1; i<=j/4; i++){
     LCD_DrawRectangle(x-r*cos((float)i/r)+1, y-r*sin((float)i/r)+1, 2*(int)(r*cos((float)i/r))+1, 2*(int)(r*sin((float)i/r))+1, col);
   }
+}
+
+//******************************************************************************
+void LCD_DrawCharacter(uint16_t x,  uint16_t y, uint8_t num, uint16_t col)
+//******************************************************************************
+// Description: Writes a single digit number at a designated coordinate
+//******************************************************************************
+{
+  for(int j = 0; j < 6; j++){
+    for(int i = 0; i < 8; i++){
+      if(size1Numbers[num][j] & 1<<i) PutPixelHiCol(x+j, y-i, col);
+    }
+  }
+}
+
+//******************************************************************************
+void LCD_DrawNumber(uint16_t x,  uint16_t y, uint32_t num, uint8_t numLen, uint16_t col)
+//******************************************************************************
+// Description: Writes a number at a designated coordinate
+//******************************************************************************
+{
+  for(int i=0; i<numLen; i++) LCD_DrawCharacter(x+7*i, y, (num%((int)pow(10, numLen-i)))/pow(10, numLen-1-i), col);
 }
 
 //******************************************************************************

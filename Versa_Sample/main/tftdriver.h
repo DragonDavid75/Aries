@@ -143,8 +143,12 @@ void TFT_Init(void);
 void PutPixelHiCol(uint16_t x, uint16_t y, uint16_t col);
 void LCD_DrawRectangle(uint16_t x, uint16_t y, uint16_t sx, uint16_t sy, uint16_t col);
 void LCD_DrawLine(uint16_t x, uint16_t y, uint16_t sx, uint16_t sy, uint16_t col);
+void LCD_DrawDashedLine(uint16_t x1,  uint16_t y1, uint16_t x2, uint16_t y2, uint8_t dashLen, uint8_t gapLen, uint16_t col);
 void LCD_DrawPolarLine(uint16_t x,  uint16_t y, uint16_t r,  float phi, uint16_t col);
+void LCD_DrawDashedPolarLine(uint16_t x,  uint16_t y, uint16_t r,  float phi, uint8_t dashLen, uint8_t gapLen, uint16_t col);
 void LCD_DrawCircle(uint16_t x,  uint16_t y, uint16_t r, uint16_t col);
+void LCD_DrawCharacter(uint16_t x,  uint16_t y, uint8_t num, uint16_t col);
+void LCD_DrawNumber(uint16_t x,  uint16_t y, uint32_t num, uint8_t numLen, uint16_t col);
 
 // Backlight
 void TFT_BacklightManage(void);

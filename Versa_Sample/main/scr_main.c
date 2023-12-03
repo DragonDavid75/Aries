@@ -33,8 +33,7 @@
 
 float throwDirection = PI/2;
 
-static uint16_t UI_timer_40ms = 0;
-
+static uint16_t UI_timer_1000ms = 0;
 
 //******************************************************************************
 // FUNCTIONS
@@ -42,26 +41,32 @@ static uint16_t UI_timer_40ms = 0;
 //******************************************************************************
 static void setBallDirection(tUIEvent button)
 //******************************************************************************
-// Description: setBallDirection
+// Description: Set ball direction in radians
 // Parameters: button - button pressed
 // Returns: none
 //******************************************************************************
 {
-  LCD_DrawPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, BLACK_COLOR);
+  LCD_DrawDashedPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, GUIDE_LINE_DASH_LENGTH, GUIDE_LINE_GAP_LENGTH, GAME_BACKGROUND_COLOR);
 
   switch (button)
   {
-  case EV_KEY_LEFT_PRESS:
-      throwDirection+=0.1;
-    break;
-  case EV_KEY_RIGHT_PRESS:
-      throwDirection-=0.1;
-    break;
+    case EV_KEY_L_TRIGGER_PRESS:
+    case EV_KEY_LEFT_PRESS:
+        throwDirection+=0.05;
+      break;
+    case EV_KEY_R_TRIGGER_PRESS:
+    case EV_KEY_RIGHT_PRESS:
+        throwDirection-=0.05;
+      break;
 
-  default:
-    break;
+    default:
+      break;
   }
-  LCD_DrawPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, GREEN_COLOR);
+  
+  if(throwDirection < 0.14) throwDirection = 0.14;
+  if(throwDirection > 3) throwDirection = 3;
+  
+  LCD_DrawDashedPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, GUIDE_LINE_DASH_LENGTH, GUIDE_LINE_GAP_LENGTH, GUIDE_LINE_COLOR);
 }
 //******************************************************************************
 static void setThrowInstruction(tUIEvent button)
@@ -116,18 +121,9 @@ void MainMenuScreenHandler(void)
     case EV_INIT: break;// Initialization event
     case EV_FULL_REDRAW:
     case EV_PARTIAL_REDRAW:
-      // Clear screen
-      LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,0);
+      //Start game
+      initGame();
 
-      generateBoard();
-      displayBoard();
-      LCD_DrawPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, GREEN_COLOR);
-      /*
-      for(uint16_t i = 0; i<=SCREEN_HEIGHT/(2*BALL_RADIUS);i++){
-        for(uint16_t j = 0; j<=SCREEN_WIDTH/(2*BALL_RADIUS)-1-i%2;j++){
-          LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1)*BALL_LAYER_DISTANCE, BALL_RADIUS, WHITE_COLOR);
-        }
-      }*/
       /*
       for(uint16_t i=0; i<=SCREEN_WIDTH/5;i++){
         LCD_DrawRectangle(i*5,0,1,SCREEN_HEIGHT,WHITE_COLOR);
@@ -138,13 +134,14 @@ void MainMenuScreenHandler(void)
       */
       break;
     case EV_TIMER_20MS:
-      if(++UI_timer_40ms == 1){
-        UI_timer_40ms = 0;
-        updateBallLocation();
+      updateBallLocation();
+      if(++UI_timer_1000ms >= 50){
+        UI_timer_1000ms = 0;
+        updateTimer();
       }
       break;
     case EV_KEY_UP_PRESS:
-      if(!moving) throwBall(throwDirection, GREEN_COLOR);
+      if(!moving) throwBall(throwDirection);
       break;
     case EV_KEY_DOWN_PRESS:
       //setBallDirection(event);
