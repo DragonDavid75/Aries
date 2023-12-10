@@ -448,12 +448,12 @@ void LCD_DrawPolarLine(uint16_t x,  uint16_t y, uint16_t r,  float phi, uint16_t
 }
 
 //******************************************************************************
-void LCD_DrawDashedPolarLine(uint16_t x,  uint16_t y, uint16_t r,  float phi, uint8_t dashLen, uint8_t gapLen, uint16_t col)
+void LCD_DrawDashedPolarLine(uint16_t x,  uint16_t y, uint16_t r,  float phi, uint8_t dashLen, uint8_t gapLen, uint16_t col, uint16_t originOffset)
 //******************************************************************************
 // Description: draws a straight line from x,y with radius r at an angle phi with color col
 //******************************************************************************
 {
-  LCD_DrawDashedLine(x, y, x+r*cos(phi), y-r*sin(phi), dashLen, gapLen, col);
+  LCD_DrawDashedLine(x+originOffset*cos(phi), y-originOffset*sin(phi), x+r*cos(phi)+originOffset*cos(phi), y-r*sin(phi)-originOffset*sin(phi), dashLen, gapLen, col);
 }
 
 //******************************************************************************
@@ -470,25 +470,34 @@ void LCD_DrawCircle(uint16_t x,  uint16_t y, uint16_t r, uint16_t col)
 }
 
 //******************************************************************************
-void LCD_DrawCharacter(uint16_t x,  uint16_t y, uint8_t num, uint16_t col)
+void LCD_DrawCharacter(uint16_t x,  uint16_t y, uint8_t num, uint16_t col, uint8_t size)
 //******************************************************************************
 // Description: Writes a single digit number at a designated coordinate
 //******************************************************************************
 {
   for(int j = 0; j < 6; j++){
     for(int i = 0; i < 8; i++){
-      if(size1Numbers[num][j] & 1<<i) PutPixelHiCol(x+j, y-i, col);
+      if(size1Characters[num][j] & 1<<i) LCD_DrawRectangle(x+j*size, y-i*size-size, size, size, col); //PutPixelHiCol(x+j, y-i, col);
     }
   }
 }
 
 //******************************************************************************
-void LCD_DrawNumber(uint16_t x,  uint16_t y, uint32_t num, uint8_t numLen, uint16_t col)
+void LCD_DrawNumber(uint16_t x,  uint16_t y, uint32_t num, uint8_t numLen, uint16_t col, uint8_t size)
 //******************************************************************************
 // Description: Writes a number at a designated coordinate
 //******************************************************************************
 {
-  for(int i=0; i<numLen; i++) LCD_DrawCharacter(x+7*i, y, (num%((int)pow(10, numLen-i)))/pow(10, numLen-1-i), col);
+  for(int i=0; i<numLen; i++) LCD_DrawCharacter(x+7*i*size, y, (num%((int)pow(10, numLen-i)))/pow(10, numLen-1-i)+48, col, size);
+}
+
+//******************************************************************************
+void LCD_DrawString(uint16_t x,  uint16_t y, char *string, uint16_t col, uint8_t size)
+//******************************************************************************
+// Description: Writes a number at a designated coordinate
+//******************************************************************************
+{
+  for(int i=0; string[i]!='\0'; i++) LCD_DrawCharacter(x+7*i*size, y, string[i], col, size);
 }
 
 //******************************************************************************

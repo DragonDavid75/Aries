@@ -41,7 +41,7 @@ static bool SysTick_TimerHandler(void* arg)
 {
   ManageUITimers();
   TFT_BacklightManage();
-  //ManageMelody();
+  if(getSoundEnabled()) ManageMelody();
   return true;
 }
 

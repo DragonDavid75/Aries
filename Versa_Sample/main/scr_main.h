@@ -21,10 +21,12 @@
 // INCLUDES
 
 #include <stdint.h>
+#include "game.h"
 
 //******************************************************************************
 // FUNCTIONS
 
 void MainMenuScreenHandler(void);
+void setCurrentMenu(tMenu menu);
 
 #endif

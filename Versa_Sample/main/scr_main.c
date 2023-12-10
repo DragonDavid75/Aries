@@ -26,80 +26,259 @@
 #include <stdio.h>
 #include "task_ui.h"
 #include <math.h>
-#include "game.h"
 
 //******************************************************************************
 // DEFINES & TYPEDEFS
 
-float throwDirection = PI/2;
-
 static uint16_t UI_timer_1000ms = 0;
+
+tMenu currentMenu = START_MENU;
 
 //******************************************************************************
 // FUNCTIONS
 
 //******************************************************************************
-static void setBallDirection(tUIEvent button)
+static void startMenuHandler(tUIEvent event)
 //******************************************************************************
-// Description: Set ball direction in radians
-// Parameters: button - button pressed
-// Returns: none
+// Description: Start screen handler
 //******************************************************************************
 {
-  LCD_DrawDashedPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, GUIDE_LINE_DASH_LENGTH, GUIDE_LINE_GAP_LENGTH, GAME_BACKGROUND_COLOR);
-
-  switch (button)
+  switch (event)
   {
-    case EV_KEY_L_TRIGGER_PRESS:
-    case EV_KEY_LEFT_PRESS:
-        throwDirection+=0.05;
+    case EV_INIT: break;// Initialization event
+    case EV_FULL_REDRAW:
+    case EV_PARTIAL_REDRAW:
+      mainMenuInit();
       break;
-    case EV_KEY_R_TRIGGER_PRESS:
-    case EV_KEY_RIGHT_PRESS:
-        throwDirection-=0.05;
+    case EV_KEY_OK_PRESS:
+      selectButton();
       break;
-
-    default:
+    case EV_KEY_UP_PRESS:
+      switch(getCurrentButton())
+      {
+        case QUIT:
+          setCurrentButton(SETTINGS);
+          break;
+        case SETTINGS:
+          setCurrentButton(PLAY);
+          break;
+        default:
+          break;
+      }
       break;
+    case EV_KEY_DOWN_PRESS:
+      switch(getCurrentButton())
+      {
+        case PLAY:
+          setCurrentButton(SETTINGS);
+          break;
+        case SETTINGS:
+          setCurrentButton(QUIT);
+          break;
+        default:
+          break;
+      }
+      break;
+    default: 
+      UIIdle();
   }
-  
-  if(throwDirection < 0.14) throwDirection = 0.14;
-  if(throwDirection > 3) throwDirection = 3;
-  
-  LCD_DrawDashedPolarLine(BALL_X_ORIGIN, BALL_Y_ORIGIN, GUIDE_LINE_LENGTH, throwDirection, GUIDE_LINE_DASH_LENGTH, GUIDE_LINE_GAP_LENGTH, GUIDE_LINE_COLOR);
 }
+
 //******************************************************************************
-static void setThrowInstruction(tUIEvent button)
+static void settingsHandler(tUIEvent event)
 //******************************************************************************
-// Description: setThrowInstruction
-// Parameters: button - button pressed
-// Returns: none
+// Description: Settings screen handler
 //******************************************************************************
 {
-  switch (button)
+  switch (event)
   {
-  case EV_FULL_REDRAW:
-  case EV_PARTIAL_REDRAW:
-    break;
-  case EV_KEY_UP_PRESS:
-    //throwBall(throwDirection);
-    break;
-  case EV_KEY_DOWN_PRESS:
-    break;
-  case EV_KEY_LEFT_PRESS:
-    break;
-  case EV_KEY_RIGHT_PRESS:
-    break;
-  case EV_KEY_OK_PRESS:
-    break;
-  case EV_KEY_RETURN_PRESS:
-    break;
-  case EV_KEY_L_TRIGGER_PRESS:
-    break;
-  case EV_KEY_R_TRIGGER_PRESS:
-    break;
-  default:
-    break;
+    case EV_INIT: break;// Initialization event
+    case EV_FULL_REDRAW:
+    case EV_PARTIAL_REDRAW:
+      settingsInit();
+      break;    
+    case EV_KEY_OK_PRESS:
+      selectButton();
+      break;
+    case EV_KEY_UP_PRESS:
+      switch(getCurrentButton())
+      {
+        case MAIN_MENU:
+          setCurrentButton(SOUND_ENABLED);
+          break;
+        default:
+          break;
+      }
+      break;
+    case EV_KEY_DOWN_PRESS:
+      switch(getCurrentButton())
+      {
+        case SOUND_ENABLED:
+          setCurrentButton(MAIN_MENU);
+          break;
+        default:
+          break;
+      }
+      break;
+    default: 
+      UIIdle();
+  }
+}
+
+//******************************************************************************
+static void pauseHandler(tUIEvent event)
+//******************************************************************************
+// Description: Pause screen handler
+//******************************************************************************
+{
+  switch (event)
+  {
+    case EV_INIT: break;// Initialization event
+    case EV_FULL_REDRAW:
+    case EV_PARTIAL_REDRAW:
+      pauseInit();
+      break;
+    case EV_KEY_OK_PRESS:
+      selectButton();
+      break;
+    case EV_KEY_UP_PRESS:
+      switch(getCurrentButton())
+      {
+        case MAIN_MENU:
+          setCurrentButton(RESUME);
+          break;
+        default:
+          break;
+      }
+      break;
+    case EV_KEY_DOWN_PRESS:
+      switch(getCurrentButton())
+      {
+        case RESUME:
+          setCurrentButton(MAIN_MENU);
+          break;
+        default:
+          break;
+      }
+      break;
+    case EV_KEY_START_PRESS:
+    case EV_KEY_SELECT_PRESS:
+      setCurrentButton(RESUME);
+      selectButton();
+    default: 
+      UIIdle();
+  }
+}
+
+//******************************************************************************
+static void gameHandler(tUIEvent event)
+//******************************************************************************
+// Description: Game screen handler
+//******************************************************************************
+{
+  switch (event)
+  {
+    case EV_INIT: break;// Initialization event
+    case EV_FULL_REDRAW:
+    case EV_PARTIAL_REDRAW:
+      //Start game
+      initGame();
+      break;
+    case EV_TIMER_20MS:
+      updateBallLocation();
+      if(++UI_timer_1000ms >= 50){
+        UI_timer_1000ms = 0;
+        updateTimer();
+      }
+      break;
+    case EV_KEY_OK_PRESS:
+    case EV_KEY_UP_PRESS:
+      throwBall();
+      break;
+
+    case EV_KEY_LEFT_PRESS:
+    case EV_KEY_RIGHT_PRESS:
+    case EV_KEY_L_TRIGGER_PRESS:
+    case EV_KEY_R_TRIGGER_PRESS:
+      setBallDirection(event);
+      break;
+    case EV_KEY_START_PRESS:
+    case EV_KEY_SELECT_PRESS:
+      setCurrentMenu(PAUSE_MENU);
+      break;
+    default: 
+      UIIdle();
+  }
+}
+
+//******************************************************************************
+static void gameOverHandler(tUIEvent event)
+//******************************************************************************
+// Description: Game over screen handler
+//******************************************************************************
+{
+  switch (event)
+  {
+    case EV_INIT: break;// Initialization event
+    case EV_FULL_REDRAW:
+    case EV_PARTIAL_REDRAW:
+      gameOverInit();
+      break;   
+    case EV_KEY_OK_PRESS:
+      selectButton();
+      break;
+    case EV_KEY_START_PRESS:
+    case EV_KEY_SELECT_PRESS:
+      setCurrentButton(MAIN_MENU);
+      selectButton();
+    default: 
+      UIIdle();
+  }
+}
+
+//******************************************************************************
+static void gameFinishedHandler(tUIEvent event)
+//******************************************************************************
+// Description: Game end screen handler
+//******************************************************************************
+{
+  switch (event)
+  {
+    case EV_INIT: break;// Initialization event
+    case EV_FULL_REDRAW:
+    case EV_PARTIAL_REDRAW:
+      levelFinishedInit();
+      break;
+    case EV_KEY_OK_PRESS:
+      selectButton();
+      break;
+    case EV_KEY_UP_PRESS:
+      switch(getCurrentButton())
+      {
+        case MAIN_MENU:
+          setCurrentButton(NEXT_LEVEL);
+          break;
+        default:
+          break;
+      }
+      break;
+    case EV_KEY_DOWN_PRESS:
+      switch(getCurrentButton())
+      {
+        case NEXT_LEVEL:
+          setCurrentButton(MAIN_MENU);
+          break;
+        default:
+          break;
+      }
+      break;
+    case EV_KEY_START_PRESS:
+    case EV_KEY_SELECT_PRESS:
+      setCurrentButton(NEXT_LEVEL);
+      selectButton();
+      break;
+    default: 
+      UIIdle();
   }
 }
 
@@ -116,69 +295,37 @@ void MainMenuScreenHandler(void)
   for (;;)
   {
     event = GetUserInterfaceEvent();
-    switch (event)
-    {
-    case EV_INIT: break;// Initialization event
-    case EV_FULL_REDRAW:
-    case EV_PARTIAL_REDRAW:
-      //Start game
-      initGame();
 
-      /*
-      for(uint16_t i=0; i<=SCREEN_WIDTH/5;i++){
-        LCD_DrawRectangle(i*5,0,1,SCREEN_HEIGHT,WHITE_COLOR);
-      }
-      for(uint16_t i=0; i<=SCREEN_HEIGHT/5;i++){
-        LCD_DrawRectangle(0,i*5,SCREEN_WIDTH,1,WHITE_COLOR);
-      }
-      */
+    switch (currentMenu)
+    {
+    case START_MENU:
+      startMenuHandler(event);
       break;
-    case EV_TIMER_20MS:
-      updateBallLocation();
-      if(++UI_timer_1000ms >= 50){
-        UI_timer_1000ms = 0;
-        updateTimer();
-      }
+    case SETTINGS_MENU:
+      settingsHandler(event);
       break;
-    case EV_KEY_UP_PRESS:
-      if(!moving) throwBall(throwDirection);
+    case PAUSE_MENU:
+      pauseHandler(event);
       break;
-    case EV_KEY_DOWN_PRESS:
-      //setBallDirection(event);
+    case GAME_MENU:
+      gameHandler(event);
       break;
-    case EV_KEY_LEFT_PRESS:
-      setBallDirection(event);
+    case GAME_OVER_MENU:
+      gameOverHandler(event);
       break;
-    case EV_KEY_RIGHT_PRESS:
-      setBallDirection(event);
+    case GAME_FINISHED_MENU:
+      gameFinishedHandler(event);
       break;
-    case EV_KEY_OK_PRESS:
-      setBallDirection(event);
-      break;
-    case EV_KEY_RETURN_PRESS:
-      stopBall();
-      break;
-    case EV_KEY_L_TRIGGER_PRESS:
-      setBallDirection(event);
-      break;
-    case EV_KEY_R_TRIGGER_PRESS:
-      setBallDirection(event);
-      break;
-    case EV_KEY_START_PRESS:
-      // Apagar
-      LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,0);
-      DisablePower();
-      SysSleep(500);
-      break;
-    case EV_KEY_SELECT_PRESS:
-      // Apagar
-      LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,0);
-      DisablePower();
-      SysSleep(500);
-      break;
-    default: 
-      UIIdle();
     }
   }
 }
 
+//******************************************************************************
+void setCurrentMenu(tMenu menu)
+//******************************************************************************
+// Description: Game end screen handler
+//******************************************************************************
+{
+  currentMenu = menu;
+  UIForceFullRedraw();
+}

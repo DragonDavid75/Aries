@@ -118,7 +118,9 @@
       "aes.h": "c",
       "graphics.h": "c",
       "systick.h": "c",
-      "tftdriver.h": "c"
+      "tftdriver.h": "c",
+      "stdio.h": "c",
+      "math.h": "c"
     },
     "idf.adapterTargetName": "esp32",
     "idf.openOcdConfigs": [
