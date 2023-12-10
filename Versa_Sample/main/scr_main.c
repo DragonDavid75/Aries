@@ -31,6 +31,7 @@
 // DEFINES & TYPEDEFS
 
 static uint16_t UI_timer_1000ms = 0;
+static uint16_t UI_timer_30000ms = 0;
 
 tMenu currentMenu = START_MENU;
 
@@ -48,6 +49,7 @@ static void startMenuHandler(tUIEvent event)
     case EV_INIT: break;// Initialization event
     case EV_FULL_REDRAW:
     case EV_PARTIAL_REDRAW:
+      UI_timer_1000ms = 0;
       mainMenuInit();
       break;
     case EV_KEY_OK_PRESS:
@@ -79,6 +81,12 @@ static void startMenuHandler(tUIEvent event)
           break;
       }
       break;
+    case EV_TIMER_20MS:
+      if(++UI_timer_1000ms >= 50){
+        UI_timer_1000ms = 0;
+        LCD_DrawString(SCREEN_WIDTH/2-6*3*7/2, SCREEN_HEIGHT/8+3*8/2, "POP IT", randomColor(), 3);
+      }
+    break;
     default: 
       UIIdle();
   }
@@ -165,6 +173,7 @@ static void pauseHandler(tUIEvent event)
     case EV_KEY_SELECT_PRESS:
       setCurrentButton(RESUME);
       selectButton();
+      break;
     default: 
       UIIdle();
   }
@@ -182,7 +191,7 @@ static void gameHandler(tUIEvent event)
     case EV_FULL_REDRAW:
     case EV_PARTIAL_REDRAW:
       //Start game
-      initGame();
+      gameInit();
       break;
     case EV_TIMER_20MS:
       updateBallLocation();
@@ -190,12 +199,17 @@ static void gameHandler(tUIEvent event)
         UI_timer_1000ms = 0;
         updateTimer();
       }
+      if(++UI_timer_30000ms >= 1500){
+        if(!getMoving()){
+          UI_timer_30000ms = 0;
+          moveBoardDown();
+        }
+      }
       break;
     case EV_KEY_OK_PRESS:
     case EV_KEY_UP_PRESS:
       throwBall();
       break;
-
     case EV_KEY_LEFT_PRESS:
     case EV_KEY_RIGHT_PRESS:
     case EV_KEY_L_TRIGGER_PRESS:
@@ -225,12 +239,14 @@ static void gameOverHandler(tUIEvent event)
       gameOverInit();
       break;   
     case EV_KEY_OK_PRESS:
+      UI_timer_30000ms = 0;
       selectButton();
       break;
     case EV_KEY_START_PRESS:
     case EV_KEY_SELECT_PRESS:
       setCurrentButton(MAIN_MENU);
       selectButton();
+      break;
     default: 
       UIIdle();
   }
@@ -250,6 +266,7 @@ static void gameFinishedHandler(tUIEvent event)
       levelFinishedInit();
       break;
     case EV_KEY_OK_PRESS:
+      UI_timer_30000ms = 0;
       selectButton();
       break;
     case EV_KEY_UP_PRESS:
@@ -315,6 +332,9 @@ void MainMenuScreenHandler(void)
       break;
     case GAME_FINISHED_MENU:
       gameFinishedHandler(event);
+      break;
+    default:
+      UIIdle();
       break;
     }
   }

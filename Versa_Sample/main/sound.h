@@ -33,7 +33,7 @@ extern const uint16_t melIntro[];
 
 void ManageMelody(void);
 void PlayMelody(const uint16_t *array);
-void setSoundEnabled(uint8_t state);
-uint8_t getSoundEnabled(void);
+void setSoundEnabled(bool state);
+bool getSoundEnabled(void);
 
 #endif

@@ -25,7 +25,7 @@
 //******************************************************************************
 // VARIABLES
 
-uint8_t soundEnabled = TRUE;
+bool soundEnabled = false;
 
 //------------------------------------------------------------------------------
 // Melodies
@@ -95,7 +95,7 @@ void PlayMelody(const uint16_t *array)
 }
 
 //******************************************************************************
-void setSoundEnabled(uint8_t state)
+void setSoundEnabled(bool state)
 //******************************************************************************
 // Description: Set the soundEnable state
 // Parameters: True or False
@@ -106,11 +106,11 @@ void setSoundEnabled(uint8_t state)
 }
 
 //******************************************************************************
-uint8_t getSoundEnabled(void)
+bool getSoundEnabled(void)
 //******************************************************************************
 // Description: Get the soundEnable state
-// Parameters: True or False
-// Returns: none
+// Parameters: None
+// Returns: True or False
 //******************************************************************************
 {
   return soundEnabled;

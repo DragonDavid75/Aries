@@ -5,6 +5,7 @@
 //******************************************************************************
 // DEFINES & TYPEDEFS
 
+#define MAX_LEVEL                   (BOARD_HORIZONTAL_SPACES*BOARD_VERTICAL_SPACES-BALLS_AT_LV_1)/(3*BALLS_PER_LEVEL/2)
 
 #define GUIDE_LINE_LENGTH           51
 #define GUIDE_LINE_COLOR            WHITE_COLOR
@@ -23,6 +24,7 @@
 
 #define COLOR_NUM                   6
 
+#define BALLS_AT_LV_1               20
 #define BALLS_PER_LEVEL             10
 #define CLUSTER_MIN_SIZE            3
 
@@ -56,6 +58,7 @@
 #define BUTTON_COLOR                GREY_COLOR
 #define BUTTON_TEXT_COLOR           WHITE_COLOR
 #define BUTTON_HIGHLIGHT_COLOR      WHITE_COLOR
+#define BACK_WALL_COLOR             DARK_GREY_COLOR
 
 #define SCORE_MENU_TEXT_SIZE        1
 #define FINAL_SCORE_MENU_TEXT_SIZE  2
@@ -70,7 +73,7 @@
 
 struct ball{
   uint16_t color;
-  uint8_t visited;
+  bool visited;
 };
 
 typedef enum
@@ -95,15 +98,22 @@ typedef enum
   NONE
 } tMenuButton;
 
-uint8_t moving;
+bool moving;
 
 //******************************************************************************
 // FUNCTIONS
 
+void mainMenuInit(void);
+void settingsInit(void);
+void pauseInit(void);
+void gameInit(void);
+void gameOverInit(void);
+void levelFinishedInit(void);
 uint16_t randomColor(void);
 void generateBoard(void);
 void displayBoard(void);
-void initGame(void);
+void drawBackWall(void);
+void moveBoardDown(void);
 void updateBallLocation(void);
 void setBall(uint16_t col);
 void setBallDirection(tUIEvent button);
@@ -119,12 +129,6 @@ void updateTimer(void);
 void resetTimer(void);
 void repairBoard(void);
 void placeGameOverLine(void);
-void gameOver(void);
-void mainMenuInit(void);
-void settingsInit(void);
-void pauseInit(void);
-void gameOverInit(void);
-void levelFinishedInit(void);
 void drawButton(tMenuButton button);
 void drawButtonHighlight(uint16_t col);
 void selectButton(void);

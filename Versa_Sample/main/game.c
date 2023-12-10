@@ -15,8 +15,8 @@
 //------------------------------------------------------------------------------
 // Local variables
 
-static uint8_t xReverse = FALSE;
-static uint8_t yReverse = FALSE;
+static bool xReverse = false;
+static bool yReverse = false;
 
 static float xDisplacement;
 static float yDisplacement;
@@ -28,10 +28,12 @@ float yPosition;
 
 float throwDirection = PI/2;
 
-uint8_t moving = FALSE;
+bool moving = false;
 
 struct ball gameBoard[BOARD_VERTICAL_SPACES][BOARD_HORIZONTAL_SPACES];
-uint8_t ballsOnBoard = 0;
+uint16_t ballsOnBoard = 0;
+uint8_t boardOffset = 0;
+uint8_t lastBoardLayerWithBall = 0;
 
 uint32_t gameScore = 0;
 uint8_t currentLevel = 1;
@@ -40,8 +42,146 @@ uint16_t timerTime = 0; //in seconds
 
 tMenuButton currentButton = NONE;
 
+
+
 //------------------------------------------------------------------------------
 // FUNCTIONS
+
+
+//******************************************************************************
+void mainMenuInit(void)
+//******************************************************************************
+// Description: Displays main menu menu
+// Parameters: None
+//******************************************************************************
+{
+  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
+  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
+
+  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
+
+  LCD_DrawString(SCREEN_WIDTH/2-6*3*7/2, SCREEN_HEIGHT/8+3*8/2, "POP IT", randomColor(), 3);
+
+  drawButton(PLAY);
+  drawButton(SETTINGS);
+  drawButton(QUIT);
+
+  setCurrentButton(PLAY);
+}
+
+//******************************************************************************
+void settingsInit(void)
+//******************************************************************************
+// Description: Displays settings menu
+// Parameters: None
+//******************************************************************************
+{
+  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
+  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
+
+  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
+
+  LCD_DrawString(SCREEN_WIDTH/2-8*3*7/2, SCREEN_HEIGHT/8+3*8/2, "SETTINGS", WHITE_COLOR, 3);
+
+  drawButton(SOUND_ENABLED);
+  drawButton(MAIN_MENU);
+
+  setCurrentButton(SOUND_ENABLED);
+}
+
+//******************************************************************************
+void pauseInit(void)
+//******************************************************************************
+// Description: Displays pause menu
+// Parameters: None
+//******************************************************************************
+{
+  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
+  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
+
+  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
+
+  LCD_DrawString(SCREEN_WIDTH/2-5*3*7/2, SCREEN_HEIGHT/8+3*8/2, "PAUSE", WHITE_COLOR, 3);
+
+  drawButton(RESUME);
+  drawButton(MAIN_MENU);
+
+  setCurrentButton(RESUME);
+}
+
+//******************************************************************************
+void gameInit(void)
+//******************************************************************************
+// Description: Displays game menu
+// Parameters: none - Returns: none
+//******************************************************************************
+{
+  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
+  LCD_DrawRectangle(SCORE_MENU_X_ORIGIN,SCORE_MENU_Y_ORIGIN,SCORE_MENU_WIDTH,SCORE_MENU_HEIGHT,SCORE_MENU_BACKGROUND_COLOR); //Draw Score menu 
+
+  if(currentLevel>MAX_LEVEL) currentLevel = 1;
+
+  if(!ballsOnBoard){
+    boardOffset = 0;
+    generateBoard();
+  }
+  drawBackWall();
+  displayBoard();
+
+  do{
+    setBall(randomColor());
+  }while(ballColor == GAME_BACKGROUND_COLOR);
+  
+  drawTimer(TIMER_X_ORIGIN, TIMER_Y_ORIGIN, SCORE_MENU_TEXT_COLOR, SCORE_MENU_TEXT_SIZE);
+  drawScore(SCORE_X_ORIGIN, SCORE_Y_ORIGIN, SCORE_MENU_TEXT_COLOR, SCORE_MENU_TEXT_SIZE);
+  placeGameOverLine();
+}
+
+//******************************************************************************
+void gameOverInit(void)
+//******************************************************************************
+// Description: Displays game over menu
+// Parameters: None
+//******************************************************************************
+{
+  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
+  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
+  
+  drawScore(ENDSCORE_X_ORIGIN, ENDSCORE_Y_ORIGIN, FINAL_SCORE_COLOR, FINAL_SCORE_MENU_TEXT_SIZE);
+  drawTimer(ENDTIME_X_ORIGIN,ENDTIME_Y_ORIGIN, FINAL_SCORE_COLOR, FINAL_SCORE_MENU_TEXT_SIZE);
+
+  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
+
+  LCD_DrawString(SCREEN_WIDTH/2-9*3*7/2, SCREEN_HEIGHT/8+3*8/2, "GAME OVER", WHITE_COLOR, 3);
+
+  drawButton(MAIN_MENU);
+
+  setCurrentButton(MAIN_MENU);
+}
+
+//******************************************************************************
+void levelFinishedInit(void)
+//******************************************************************************
+// Description: Displays level finished menu
+// Parameters: None
+//******************************************************************************
+{
+  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
+  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
+  
+  drawScore(ENDSCORE_X_ORIGIN, ENDSCORE_Y_ORIGIN, FINAL_SCORE_COLOR, FINAL_SCORE_MENU_TEXT_SIZE);
+  drawTimer(ENDTIME_X_ORIGIN,ENDTIME_Y_ORIGIN, FINAL_SCORE_COLOR, FINAL_SCORE_MENU_TEXT_SIZE);
+
+  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
+
+  LCD_DrawString(SCREEN_WIDTH/2-7*3*7/2, SCREEN_HEIGHT/8+3*8/2, "YOU WIN", WHITE_COLOR, 3);
+
+  drawButton(NEXT_LEVEL);
+  drawButton(MAIN_MENU);
+
+  setCurrentButton(NEXT_LEVEL);
+}
+
 
 
 //******************************************************************************
@@ -79,18 +219,18 @@ void generateBoard(void)
 // Parameters: none - Returns: none
 //******************************************************************************
 {
-  uint8_t ballsPlaced = 0;
+  uint16_t ballsPlaced = 0;
   
   for(uint16_t i = 0; i<BOARD_VERTICAL_SPACES;i++){
     for(uint16_t j = 0; j<BOARD_HORIZONTAL_SPACES-i%2;j++){
-      if(ballsPlaced<BALLS_PER_LEVEL*currentLevel){
+      if(ballsPlaced<BALLS_PER_LEVEL*currentLevel+BALLS_AT_LV_1){
         gameBoard[i][j].color = randomColor();
         if(gameBoard[i][j].color != GAME_BACKGROUND_COLOR) ballsPlaced++;
       }
       else{
         gameBoard[i][j].color = GAME_BACKGROUND_COLOR;
       }
-      gameBoard[i][j].visited = FALSE;
+      gameBoard[i][j].visited = false;
     }
   }
   ballsOnBoard = ballsPlaced;
@@ -102,36 +242,42 @@ void generateBoard(void)
 void displayBoard(void)
 //******************************************************************************
 // Description: Displays the playing board
-// Parameters: none - Returns: none
+// Parameters: None - Returns: none
 //******************************************************************************
 {
   for(uint16_t i = 0; i<BOARD_VERTICAL_SPACES;i++){
     for(uint16_t j = 0; j<BOARD_HORIZONTAL_SPACES-i%2;j++){
-      if(gameBoard[i][j].color != GAME_BACKGROUND_COLOR) LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1)*BALL_LAYER_DISTANCE, BALL_RADIUS, gameBoard[i][j].color);
+      if(gameBoard[i][j].color != GAME_BACKGROUND_COLOR){
+        LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1+2*boardOffset)*BALL_LAYER_DISTANCE, BALL_RADIUS, gameBoard[i][j].color);
+        lastBoardLayerWithBall = i;
+      } 
     }
   }
 }
 
 //******************************************************************************
-void initGame(void)
+void drawBackWall(void)
 //******************************************************************************
-// Description: Starts game
+// Description: Draws the back wall
 // Parameters: none - Returns: none
 //******************************************************************************
 {
-  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
-  LCD_DrawRectangle(SCORE_MENU_X_ORIGIN,SCORE_MENU_Y_ORIGIN,SCORE_MENU_WIDTH,SCORE_MENU_HEIGHT,SCORE_MENU_BACKGROUND_COLOR); //Draw Score menu 
+  LCD_DrawRectangle(0, 0, SCREEN_WIDTH, BALL_LAYER_DISTANCE*2*boardOffset, BACK_WALL_COLOR);
+}
 
-  if(!ballsOnBoard) generateBoard();
+//******************************************************************************
+void moveBoardDown(void)
+//******************************************************************************
+// Description: Moves the board down
+// Parameters: none - Returns: none
+//******************************************************************************
+{
+  boardOffset++;
+  LCD_DrawRectangle(0, BALL_LAYER_DISTANCE*2*boardOffset, SCREEN_WIDTH, BALL_LAYER_DISTANCE*2*lastBoardLayerWithBall+1, GAME_BACKGROUND_COLOR);
+  drawBackWall();
   displayBoard();
 
-  do{
-    setBall(randomColor());
-  }while(ballColor == GAME_BACKGROUND_COLOR);
-  
-  drawTimer(TIMER_X_ORIGIN, TIMER_Y_ORIGIN, SCORE_MENU_TEXT_COLOR, SCORE_MENU_TEXT_SIZE);
-  drawScore(SCORE_X_ORIGIN, SCORE_Y_ORIGIN, SCORE_MENU_TEXT_COLOR, SCORE_MENU_TEXT_SIZE);
-  placeGameOverLine();
+  if(lastBoardLayerWithBall+boardOffset >= BOARD_VERTICAL_SPACES-1) setCurrentMenu(GAME_OVER_MENU);;
 }
 
 //******************************************************************************
@@ -158,7 +304,7 @@ void updateBallLocation(void)
     }
 
     //Vertical collision
-    if(yPosition<=BALL_RADIUS){
+    if(yPosition<=BALL_RADIUS+2*boardOffset*BALL_LAYER_DISTANCE){
       collition();
       //yReverse = !yReverse;
       //yPosition += 2*(BALL_RADIUS - yPosition);
@@ -174,7 +320,7 @@ void updateBallLocation(void)
     for(uint16_t i = 0; i<BOARD_VERTICAL_SPACES;i++){
       for(uint16_t j = 0; j<BOARD_HORIZONTAL_SPACES-i%2;j++){
         if(gameBoard[i][j].color != GAME_BACKGROUND_COLOR){
-          if(sqrt(pow((j*2+1+i%2)*BALL_RADIUS - xPosition, 2)+pow((i*2+1)*BALL_LAYER_DISTANCE - yPosition, 2)) < 2*BALL_RADIUS) collition();
+          if(sqrt(pow((j*2+1+i%2)*BALL_RADIUS - xPosition, 2)+pow((i*2+1+2*boardOffset)*BALL_LAYER_DISTANCE - yPosition, 2)) < 2*BALL_RADIUS) collition();
         }
       }
     }
@@ -235,15 +381,16 @@ void setBallDirection(tUIEvent button)
 void throwBall(void)
 //******************************************************************************
 // Description: sets the ball on motion with the set direction
-// Parameters: Ball direction - Returns: none
+// Parameters: none - Returns: none
 //******************************************************************************
 {
   if(moving) return;
+
   xDisplacement = BALL_SPEED*cos(throwDirection);
   yDisplacement = -BALL_SPEED*sin(throwDirection);
-  moving = TRUE;
-  xReverse = FALSE;
-  yReverse = FALSE;
+  moving = true;
+  xReverse = false;
+  yReverse = false;
 }
 
 //******************************************************************************
@@ -256,10 +403,11 @@ void collition(void)
 { 
   if(!moving) return;
 
-  moving = FALSE;
+  moving = false;
   ballsOnBoard++;
 
-  //LCD_DrawCircle(xPosition, yPosition, BALL_RADIUS, GAME_BACKGROUND_COLOR);
+  yPosition -= 2*boardOffset*BALL_LAYER_DISTANCE;
+
   uint8_t ballLayer = round(((float)yPosition-BALL_LAYER_DISTANCE)/(2*BALL_LAYER_DISTANCE));
   yPosition = (2*ballLayer+1)*BALL_LAYER_DISTANCE;
   uint8_t ballInLayerPos = round(((float)xPosition-(1+ballLayer%2)*BALL_RADIUS)/(2*BALL_RADIUS));
@@ -275,36 +423,44 @@ void collition(void)
     drawScore(SCORE_X_ORIGIN, SCORE_Y_ORIGIN, SCORE_MENU_TEXT_COLOR, SCORE_MENU_TEXT_SIZE);
   }
 
-  if(ballLayer>=BOARD_VERTICAL_SPACES-1 && deletedBalls<CLUSTER_MIN_SIZE) setCurrentMenu(GAME_OVER_MENU);//Check if ball on game over line
+  if(ballLayer+boardOffset>=BOARD_VERTICAL_SPACES-1 && deletedBalls<CLUSTER_MIN_SIZE) setCurrentMenu(GAME_OVER_MENU);//Check if ball on game over line
   if(!ballsOnBoard) setCurrentMenu(GAME_FINISHED_MENU);
 
+  if(!ballsOnBoard) return;
   displayBoard();
-
+  
   do{
+    bool colorOnBoard = false;
     setBall(randomColor());
+    for(uint16_t i = 0; i<=lastBoardLayerWithBall;i++){
+      for(uint16_t j = 0; j<BOARD_HORIZONTAL_SPACES-i%2;j++){
+        if(ballColor == gameBoard[i][j].color && gameBoard[i][j].color != GAME_BACKGROUND_COLOR) colorOnBoard = true;
+      }
+    }
+    if(!colorOnBoard) ballColor = GAME_BACKGROUND_COLOR;
   }while(ballColor == GAME_BACKGROUND_COLOR);
 }
 
 //******************************************************************************
 uint16_t checkUnconectedBall()
 //******************************************************************************
-// Description: Check if there asre any unconected balls
+// Description: Check if there are any unconected balls
 // Parameters: None - Returns: number of balls in the cluster
 //******************************************************************************
 {
   uint16_t clusterSize = 0;
   for(uint16_t i = 0; i<BOARD_HORIZONTAL_SPACES; i++){
-    if(gameBoard[0][i].visited==FALSE && gameBoard[0][i].color != GAME_BACKGROUND_COLOR) recursiveUnconectedBallCheck(0, i);
+    if(gameBoard[0][i].visited==false && gameBoard[0][i].color != GAME_BACKGROUND_COLOR) recursiveUnconectedBallCheck(0, i);
   }
 
   for(uint16_t i = 0; i<BOARD_VERTICAL_SPACES;i++){
     for(uint16_t j = 0; j<BOARD_HORIZONTAL_SPACES-i%2;j++){
-      if(gameBoard[i][j].visited == FALSE && gameBoard[i][j].color != GAME_BACKGROUND_COLOR){
+      if(gameBoard[i][j].visited == false && gameBoard[i][j].color != GAME_BACKGROUND_COLOR){
         clusterSize++;
         gameBoard[i][j].color = GAME_BACKGROUND_COLOR;
-        LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1)*BALL_LAYER_DISTANCE, BALL_RADIUS, GAME_BACKGROUND_COLOR);
+        LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1+2*boardOffset)*BALL_LAYER_DISTANCE, BALL_RADIUS, GAME_BACKGROUND_COLOR);
       } 
-      gameBoard[i][j].visited = FALSE;
+      gameBoard[i][j].visited = false;
     }
   }
 
@@ -314,19 +470,19 @@ uint16_t checkUnconectedBall()
 //******************************************************************************
 void recursiveUnconectedBallCheck(int8_t ballLayer, int8_t ballInLayerPos)
 //******************************************************************************
-// Description: Check the size of the cluster in a recursive manner
+// Description: Checks if there are any unconnected balls in a recursive manner
 // Parameters: Start position on the game board - Returns: None
 //******************************************************************************
 {
   if(ballLayer < 0 || ballLayer >= BOARD_VERTICAL_SPACES) return;
   if(ballInLayerPos < 0 || ballInLayerPos >= BOARD_HORIZONTAL_SPACES) return;
 
-  gameBoard[ballLayer][ballInLayerPos].visited = TRUE;
+  gameBoard[ballLayer][ballInLayerPos].visited = true;
 
   for(int8_t i = -1; i <= 1; i++){
     for(int8_t j = 0; j <= 1; j++){
       int8_t ballInLayerToCheck = ballInLayerPos + j*(2-abs(i)) + abs(i)*(ballLayer%2) - 1;
-      if(gameBoard[ballLayer+i][ballInLayerToCheck].visited==FALSE && gameBoard[ballLayer+i][ballInLayerToCheck].color != GAME_BACKGROUND_COLOR) recursiveUnconectedBallCheck(ballLayer+i, ballInLayerToCheck);
+      if(gameBoard[ballLayer+i][ballInLayerToCheck].visited==false && gameBoard[ballLayer+i][ballInLayerToCheck].color != GAME_BACKGROUND_COLOR) recursiveUnconectedBallCheck(ballLayer+i, ballInLayerToCheck);
     }
   }
 }
@@ -343,11 +499,11 @@ uint16_t checkCluster(uint8_t ballLayer, uint8_t ballInLayerPos)
 
   for(uint16_t i = 0; i<BOARD_VERTICAL_SPACES;i++){
     for(uint16_t j = 0; j<BOARD_HORIZONTAL_SPACES-i%2;j++){
-      if(clusterSize >= CLUSTER_MIN_SIZE && gameBoard[i][j].visited == TRUE){
+      if(clusterSize >= CLUSTER_MIN_SIZE && gameBoard[i][j].visited == true){
         gameBoard[i][j].color = GAME_BACKGROUND_COLOR;
-        LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1)*BALL_LAYER_DISTANCE, BALL_RADIUS, GAME_BACKGROUND_COLOR);
+        LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1+2*boardOffset)*BALL_LAYER_DISTANCE, BALL_RADIUS, GAME_BACKGROUND_COLOR);
       }
-      gameBoard[i][j].visited = FALSE;
+      gameBoard[i][j].visited = false;
     }
   }
 
@@ -365,13 +521,13 @@ void recursiveClusterCheck(int8_t ballLayer, int8_t ballInLayerPos, uint16_t* cl
   if(ballLayer < 0 || ballLayer >= BOARD_VERTICAL_SPACES) return;
   if(ballInLayerPos < 0 || ballInLayerPos >= BOARD_HORIZONTAL_SPACES) return;
 
-  gameBoard[ballLayer][ballInLayerPos].visited = TRUE;
+  gameBoard[ballLayer][ballInLayerPos].visited = true;
   *clusterSize += 1;
 
   for(int8_t i = -1; i <= 1; i++){
     for(int8_t j = 0; j <= 1; j++){
       int8_t ballInLayerToCheck = ballInLayerPos + j*(2-abs(i)) + abs(i)*(ballLayer%2) - 1;
-      if(gameBoard[ballLayer+i][ballInLayerToCheck].visited==FALSE && gameBoard[ballLayer+i][ballInLayerToCheck].color == gameBoard[ballLayer][ballInLayerPos].color) recursiveClusterCheck(ballLayer+i, ballInLayerToCheck, clusterSize);
+      if(gameBoard[ballLayer+i][ballInLayerToCheck].visited==false && gameBoard[ballLayer+i][ballInLayerToCheck].color == gameBoard[ballLayer][ballInLayerPos].color) recursiveClusterCheck(ballLayer+i, ballInLayerToCheck, clusterSize);
     }
   }
 }
@@ -413,8 +569,8 @@ void updateTimer(void)
 //******************************************************************************
 void resetTimer(void)
 //******************************************************************************
-// Description: Reset timer time and show on display
-// Parameters: Timer start time in seconds
+// Description: Reset timer time 
+// Parameters: None
 //******************************************************************************
 {
   timerTime = 0;
@@ -427,9 +583,10 @@ void repairBoard(void)
 // Parameters: None
 //******************************************************************************
 {
-  for(uint16_t i = BOARD_VERTICAL_SPACES - GUIDE_LINE_LENGTH/(2*BALL_LAYER_DISTANCE); i<BOARD_VERTICAL_SPACES-1; i++){
+  if(BALL_LAYER_DISTANCE*2*boardOffset >= BALL_Y_ORIGIN-GUIDE_LINE_LENGTH) drawBackWall();
+  for(uint16_t i = lastBoardLayerWithBall; (i*2+2+2*boardOffset)*BALL_LAYER_DISTANCE>BALL_Y_ORIGIN-GUIDE_LINE_LENGTH; i--){
     for(uint16_t j = 0; j<BOARD_HORIZONTAL_SPACES-i%2; j++){
-      if(gameBoard[i][j].color != GAME_BACKGROUND_COLOR) LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1)*BALL_LAYER_DISTANCE, BALL_RADIUS, gameBoard[i][j].color);
+      if(gameBoard[i][j].color != GAME_BACKGROUND_COLOR) LCD_DrawCircle((j*2+1+i%2)*BALL_RADIUS, (i*2+1+2*boardOffset)*BALL_LAYER_DISTANCE, BALL_RADIUS, gameBoard[i][j].color);
     }
   }
 }
@@ -445,128 +602,10 @@ void placeGameOverLine(void)
 }
 
 //******************************************************************************
-void gameOver(void)
-//******************************************************************************
-// Description: End of game
-// Parameters: None
-//******************************************************************************
-{
-  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,0);
-  DisablePower();
-  SysSleep(500);
-}
-
-//******************************************************************************
-void mainMenuInit(void)
-//******************************************************************************
-// Description: Level finished
-// Parameters: None
-//******************************************************************************
-{
-  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
-  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
-
-  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
-
-  LCD_DrawString(SCREEN_WIDTH/2-6*3*7/2, SCREEN_HEIGHT/8+3*8/2, "POP IT", randomColor(), 3);
-
-  drawButton(PLAY);
-  drawButton(SETTINGS);
-  drawButton(QUIT);
-
-  setCurrentButton(PLAY);
-}
-
-//******************************************************************************
-void settingsInit(void)
-//******************************************************************************
-// Description: Level finished
-// Parameters: None
-//******************************************************************************
-{
-  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
-  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
-
-  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
-
-  LCD_DrawString(SCREEN_WIDTH/2-8*3*7/2, SCREEN_HEIGHT/8+3*8/2, "SETTINGS", WHITE_COLOR, 3);
-
-  drawButton(SOUND_ENABLED);
-  drawButton(MAIN_MENU);
-
-  setCurrentButton(SOUND_ENABLED);
-}
-
-//******************************************************************************
-void pauseInit(void)
-//******************************************************************************
-// Description: Level finished
-// Parameters: None
-//******************************************************************************
-{
-  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
-  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
-
-  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
-
-  LCD_DrawString(SCREEN_WIDTH/2-5*3*7/2, SCREEN_HEIGHT/8+3*8/2, "PAUSE", WHITE_COLOR, 3);
-
-  drawButton(RESUME);
-  drawButton(MAIN_MENU);
-
-  setCurrentButton(RESUME);
-}
-
-//******************************************************************************
-void gameOverInit(void)
-//******************************************************************************
-// Description: Level finished
-// Parameters: None
-//******************************************************************************
-{
-  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
-  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
-  
-  drawScore(ENDSCORE_X_ORIGIN, ENDSCORE_Y_ORIGIN, FINAL_SCORE_COLOR, FINAL_SCORE_MENU_TEXT_SIZE);
-  drawTimer(ENDTIME_X_ORIGIN,ENDTIME_Y_ORIGIN, FINAL_SCORE_COLOR, FINAL_SCORE_MENU_TEXT_SIZE);
-
-  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
-
-  LCD_DrawString(SCREEN_WIDTH/2-9*3*7/2, SCREEN_HEIGHT/8+3*8/2, "GAME OVER", WHITE_COLOR, 3);
-
-  drawButton(MAIN_MENU);
-
-  setCurrentButton(MAIN_MENU);
-}
-
-//******************************************************************************
-void levelFinishedInit(void)
-//******************************************************************************
-// Description: Level finished
-// Parameters: None
-//******************************************************************************
-{
-  LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,GAME_BACKGROUND_COLOR); //Clear screen
-  LCD_DrawRectangle(SCREEN_WIDTH/10, SCREEN_HEIGHT/20, 8*SCREEN_WIDTH/10, 18*SCREEN_HEIGHT/20, MENU_COLOR);
-  
-  drawScore(ENDSCORE_X_ORIGIN, ENDSCORE_Y_ORIGIN, FINAL_SCORE_COLOR, FINAL_SCORE_MENU_TEXT_SIZE);
-  drawTimer(ENDTIME_X_ORIGIN,ENDTIME_Y_ORIGIN, FINAL_SCORE_COLOR, FINAL_SCORE_MENU_TEXT_SIZE);
-
-  LCD_DrawRectangle(SCREEN_WIDTH/20, SCREEN_HEIGHT/20, 18*SCREEN_WIDTH/20, 3*SCREEN_HEIGHT/20, GREY_COLOR);
-
-  LCD_DrawString(SCREEN_WIDTH/2-7*3*7/2, SCREEN_HEIGHT/8+3*8/2, "YOU WIN", WHITE_COLOR, 3);
-
-  drawButton(NEXT_LEVEL);
-  drawButton(MAIN_MENU);
-
-  setCurrentButton(NEXT_LEVEL);
-}
-
-//******************************************************************************
 void drawButton(tMenuButton button)
 //******************************************************************************
-// Description: Draws a line around the button currently selected
-// Parameters: None
+// Description: Draws the specified button where it is designed to be
+// Parameters: Specified button
 //******************************************************************************
 {
   uint8_t buttonPos;
@@ -661,7 +700,7 @@ void drawButtonHighlight(uint16_t col)
 //******************************************************************************
 void selectButton(void)
 //******************************************************************************
-// Description: Set current button selected
+// Description: Carries out the process for each button when selected
 // Parameters: None
 //******************************************************************************
 {
@@ -678,6 +717,7 @@ void selectButton(void)
       break;
     case RESUME:
       setCurrentMenu(GAME_MENU);
+      break;
     case NEXT_LEVEL:
       resetTimer();
       currentLevel++;
@@ -688,16 +728,20 @@ void selectButton(void)
       LCD_DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,0);
       DisablePower();
       SysSleep(500);
+      break;
     case MAIN_MENU:
       resetTimer();
       ballsOnBoard = 0;
       gameScore = 0;
+      currentLevel = 1;
       setCurrentMenu(START_MENU);
       break;
     default:
       return;
   }
 }
+
+
 
 //******************************************************************************
 uint16_t getBallsOnBoard(void)
@@ -712,7 +756,7 @@ uint16_t getBallsOnBoard(void)
 //******************************************************************************
 uint8_t getMoving(void)
 //******************************************************************************
-// Description: Returns the number of balls on the board
+// Description: Returns the motion state of the ball
 // Parameters: None
 //******************************************************************************
 {
