@@ -14,7 +14,7 @@ El propósito de este repositorio es proporcinar soporte a los alumnos agraciado
 Se incluyen carpetas con el siguiente contenido:
 - *PCB*. Esquemático con el diseño de la placa y vista 3D en diversos formatos.
 - [*Recovery*](Recovery/instrucciones.md). Incluye el firmware actual de la consola y todo lo necesario para programarlo.
-- [*Versa_Sample*](Versa_Sample/instrucciones.md). Código de ejemplo para programar la placa.
+- [*Pop_It*](Pop_It/instrucciones.md). Codigo del juego.
 ***
 ## Información general
 
